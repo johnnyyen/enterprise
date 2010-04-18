@@ -1,0 +1,53 @@
+<html>
+	<head>
+		<script type="text/javascript" src="global.js"></script>
+		<script type="text/javascript" src="Yams.js"></script>
+		<script type="text/javascript" src="jquery-1.4.2.min.js"></script>
+		<script>
+			chrome.extension.sendRequest({action: "getMessages"}, function(response) {
+  				var yams = new Yams(JSON.parse(response).messages).getYams();
+				
+				var yamList = $("#yams");
+				for(var i=0; i<yams.length; i++) {
+					yamList.append(yams[i].asElement());
+				}
+			});
+			
+			$(function(){
+				$('#toggleMessageBoxButton').click(function(){
+					$('#messageBox').toggle();
+				})
+			});
+		</script>
+		<style>
+			body {
+				width: 380px
+			}
+			div#yams .yam {
+				font-size: 12px;
+				color: black;
+				border: solid 2px; #000000;
+				border-radius: 3px;
+				margin-bottom: 10px;
+				width: 350px;
+				float: left;
+				clear: left;
+				overflow: hidden;
+			}
+			div#yams .reply-arrow {
+				float:left;
+				color: black;
+				width: 20px;
+			}
+			#messageBox {
+				display: none;
+			}
+		</style>
+	</head>
+	<body>
+		<a id="toggleMessageBoxButton" href="javascript:;">Yam something</a>
+		<textarea id="messageBox"></textarea>
+		<div id="yams">
+		</div>
+	</body>
+</html>

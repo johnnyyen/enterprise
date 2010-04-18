@@ -1,0 +1,36 @@
+<html>
+	<head>
+		<script>
+			chrome.extension.sendRequest({'action': 'fetchYams'}, updateYams);
+			
+			function updateYams(yams) {
+				messageBox.value = yams;
+			}
+		</script>
+		<style>
+			ul#yams .header {
+				font-size: 10px;
+				font-weight: bold;
+				color: gray;
+			}
+			ul#yams .yam {
+				font-size: 12px;
+				color: black;
+			}
+		</style>
+	</head>
+	<body>
+		<a id="toggleMessageBoxButton" href="javascript:;">Yam something</a>
+		<textarea id="messageBox"></textarea>
+		<ul id="yams">
+			<li id="testyam1">
+				<div>
+					<div class="header">
+						<span class="time">12:20</span> from <span class="user">Marko</span>
+					</div>
+					<span class="yam">This is big bunch of yam from Marko and he has nothing to say</span>
+				</div>
+			</li>
+		</ul>
+	</body>
+</html>

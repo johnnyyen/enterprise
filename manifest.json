@@ -1,0 +1,14 @@
+{
+  "name": "Enterprise",
+  "version": "0.1",
+  "description": "Yammer integration for Chrome",
+  "background_page": "background.html",
+  "browser_action": {
+    "default_icon": "icon.png",
+	"popup": "popup.html"
+  },
+  "permissions": [
+	"tabs",
+    "https://www.yammer.com/"
+  ]
+}
