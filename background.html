@@ -4,9 +4,21 @@
 		<script type="text/javascript">
 chrome.extension.onRequest.addListener(
 	function(request, sender, sendResponse) {
-		if (request.action == "getMessages") 
-		var authenticated = new Authentication();
-		authenticated.getMessages(sendResponse);
+		if (request.action == "getMessages") { 
+			var authenticated = new Authentication();
+			authenticated.getMessages(sendResponse, localStorage.getItem("lastYamId"));
+			localStorage.removeItem("lastYamId");
+		} else if(request.action == "storeOrphanYam") {
+			var orphans = localStorage.getItem("oprhanYams");
+			if(orphans) {
+				orphans.push(request.yam);
+				localStorage.setItem("orphanYams", orphans);
+			} else {
+				localStorage.setItem("orphanYams", [request.yam]);
+			}
+		} else if(request.action == "storeLastYamId") {
+			localStorage.setItem("lastYamId", request.yamId);
+		}
 	}
 );
 		</script>

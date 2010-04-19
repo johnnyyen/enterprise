@@ -8,8 +8,12 @@ function Authentication() {
 	this._init();
 }
 
-Authentication.prototype.getMessages = function(callback) {
-	this._call('https://www.yammer.com/api/v1/messages.json', 'GET', 
+Authentication.prototype.getMessages = function(callback, olderThan) {
+	var url = 'https://www.yammer.com/api/v1/messages.json?threaded=true';
+	
+	if(olderThan) url += '&older_than=' + olderThan
+	
+	this._call(url, 'GET', 
 		this._oauth_headers(localStorage.getItem("OAUTH_TOKEN"), localStorage.getItem("OAUTH_TOKEN_SECRET"), null), 
 		function() {}, 
 		function(data) {

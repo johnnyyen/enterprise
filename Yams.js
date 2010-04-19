@@ -26,12 +26,16 @@ function Yams(yams) {
 Yams.prototype._init = function(yams) {
 	for(var i=0; i<yams.length; i++) {
 		var yam = new Yam(yams[i]);
-		if(!yam.replied_to_id || ( yam.replied_to_id && contains(yams, function(element) {
-			return element.id == yam.replied_to_id ? true : false;  
-		}))) {
+		
+		if(!yam.replied_to_id || ( yam.replied_to_id && containsFirstYam(yams, yam))) {
 			this.YAMS.push((new Yam(yams[i])));
+		} else {
+			chrome.extension.sendRequest({action: "storeOrphanYam", yam: new Yam(yams[i])});
 		}
 	}
+	
+	chrome.extension.sendRequest({action: "storeLastYamId", yamId: this.YAMS[this.YAMS.length - 1].id})
+	
 	this.YAMS = this.YAMS.sort(this._yamComparator);
 }
 
