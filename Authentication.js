@@ -9,9 +9,9 @@ function Authentication() {
 }
 
 Authentication.prototype.getMessages = function(callback, olderThan) {
-	var url = 'https://www.yammer.com/api/v1/messages.json?threaded=true';
+	var url = 'https://www.yammer.com/api/v1/messages.json';
 	
-	if(olderThan) url += '&older_than=' + olderThan
+	if(olderThan) url += '?older_than=' + olderThan
 	
 	this._call(url, 'GET', 
 		this._oauth_headers(localStorage.getItem("OAUTH_TOKEN"), localStorage.getItem("OAUTH_TOKEN_SECRET"), null), 

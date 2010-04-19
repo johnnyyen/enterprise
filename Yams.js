@@ -9,13 +9,41 @@ Yam.prototype._init = function(jsonYam) {
 }
 
 Yam.prototype.asElement = function() {
-	var element = this.replied_to_id ? $('<div>').addClass('reply-arrow').text('-->').append('<div>') : $('<div>'); 
-	
-	return element.before($('<div>')
+	var element = $('<div>')
 			.addClass("yam")
 			.attr("id", this.id)
 			.append('<p>')
-				.text(this.body.parsed));
+				.text(this.body.parsed); 
+	
+	return this.replied_to_id ? $('<div>').addClass('reply-arrow').text('-->').after(element) : element;
+}
+
+function Thread() {
+	this.YAMS = new Array();
+	
+}
+
+Thread.prototype.init = function() {
+	
+}
+
+Thread.prototype.addYam = function(yam) {
+	this.YAMS.push(yam);
+}
+
+Thread.prototype.getYams = function() {
+	if(!this._hasFirstYam()) {
+		chrome.extension.sendRequest({action: "fetchThread", function())
+	}
+	
+}
+
+Thread.prototype._hasFirstYam() {
+	for(var key in this.YAMS) {
+		var yam = this.YAMS[key];
+		if(!yam.replied_to_id) return true;
+	}
+	return false;
 }
 
 function Yams(yams) {
