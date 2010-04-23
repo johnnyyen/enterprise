@@ -9,3 +9,15 @@ function containsFirstYam(haystack, yam) {
 	}
 	return false;
 }
+
+function contains(haystack, element, comparator) {
+	for(var i=0 ; i<haystack.length ; i++) {
+		var item = haystack[i];
+		if(comparator && comparator(item, element)) {
+			return item;
+		} else if(!comparator && item == element){
+			return item;
+		}
+	}
+	return null;
+}

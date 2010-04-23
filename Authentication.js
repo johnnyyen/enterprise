@@ -13,11 +13,28 @@ Authentication.prototype.getMessages = function(callback, olderThan) {
 	
 	if(olderThan) url += '?older_than=' + olderThan
 	
+	var instance = this;
 	this._call(url, 'GET', 
 		this._oauth_headers(localStorage.getItem("OAUTH_TOKEN"), localStorage.getItem("OAUTH_TOKEN_SECRET"), null), 
 		function() {}, 
 		function(data) {
-			callback(data);
+			var yams = JSON.parse(data).messages
+			yams = instance._filterSkippableYams(yams);
+			callback(yams);
+	});
+}
+
+Authentication.prototype.getThread = function(callback, threadId) {
+	var url = 'https://www.yammer.com/api/v1/messages/in_thread/' + threadId + '.json';
+		
+	var instance = this;
+	this._callSync(url, 'GET', 
+		this._oauth_headers(localStorage.getItem("OAUTH_TOKEN"), localStorage.getItem("OAUTH_TOKEN_SECRET"), null), 
+		function() {}, 
+		function(data) {
+			var yams = JSON.parse(data).messages;
+			instance._storeSkippableYamIds(yams)
+			callback(yams);
 	});
 }
 
@@ -42,6 +59,33 @@ Authentication.prototype._init = function() {
 			}
 		)
 	}
+}
+
+Authentication.prototype._filterSkippableYams = function(yams) {
+	var skippable = localStorage.getItem("alreadyFetchedYamIds");
+	if(skippable) {
+		skippable = skippable.split(",");
+		for(var i=0 ; i<yams.length ; i++) {
+			if(contains(skippable, yams[i].id)) {
+				yams.splice(i, 1);
+				i--;
+			}
+		}
+	}
+	return yams;
+}
+
+Authentication.prototype._storeSkippableYamIds = function(yams) {
+	var alreadyFetched = localStorage.getItem("alreadyFetchedYamIds");
+	if(!alreadyFetched) {
+		alreadyFetched = new Array();
+	} else {
+		alreadyFetched = alreadyFetched.split(",");
+	}
+	for(var i=0 ; i<yams.length ; i++) {
+		alreadyFetched.push(yams[i].id);
+	}
+	localStorage.setItem("alreadyFetchedYamIds", alreadyFetched);
 }
 
 Authentication.prototype._getCode = function(tabId, changeInfo, tab) {
@@ -89,6 +133,23 @@ Authentication.prototype._call = function(url, method, headers, onSuccess, parse
 		 }
 	}
 	xhr.open(method, url, true);
+	xhr.setRequestHeader('Authorization', headers);
+	xhr.send();
+}
+
+Authentication.prototype._callSync = function(url, method, headers, onSuccess, parseData, onError) {
+	var xhr = new XMLHttpRequest();
+	xhr.onreadystatechange = function(data) {
+		if (xhr.readyState == 4) {
+		    if (xhr.status == 200) {
+		      	if(parseData) parseData(xhr.responseText);			      
+				if(onSuccess) onSuccess();
+		    } else {
+				if(onError) onError(xhr);
+			}
+		 }
+	}
+	xhr.open(method, url, false);
 	xhr.setRequestHeader('Authorization', headers);
 	xhr.send();
 }

@@ -1,6 +1,7 @@
 <html>
 	<head>
 		<script type="text/javascript" src="global.js"></script>
+		<script type="text/javascript" src="Authentication.js"></script>
 		<script type="text/javascript" src="Yams.js"></script>
 		<script type="text/javascript" src="jquery-1.4.2.min.js"></script>
 		<script type="text/javascript" src="jquery.jqpageflow.js"></script>
@@ -8,30 +9,32 @@
 			var loading = false;
 		
 			chrome.extension.sendRequest({action: "getMessages"}, function(response) {
-  				var yams = new Yams(JSON.parse(response).messages).getYams();
+  				var threads = new Threads(response).getThreads();
 				
 				var yamList = $("#yams");
-				for(var i=0; i<yams.length; i++) {
-					yamList.append(yams[i].asElement());
+				for(var i=0; i<threads.length; i++) {
+					yamList.append(threads[i].asElement());
 				}
 			});
 			
 			$(function(){
 				$(window).unload(function() {
 					localStorage.removeItem("lastYamId");
+					localStorage.removeItem("alreadyFetchedYamIds");
 				});
 				
 				$(window).scroll(function(){
 					// work out whether we need to fire our ajax call or not
-			       	if ($(this).scrollTop() == $(document).height() - $(this).height() ) {
+			       	if (!loading && $(this).scrollTop() == $(document).height() - $(this).height() ) {
 						loading = true;
-						chrome.extension.sendRequest({action: "getMessages", olderThan:$('#yams div.yam:last').attr('id')}, function(response) {
-			  				var yams = new Yams(JSON.parse(response).messages).getYams();
+						chrome.extension.sendRequest({action: "getMessages"}, function(response) {
+			  				var threads = new Threads(response).getThreads();
 							
 							var yamList = $("#yams");
-							for(var i=0; i<yams.length; i++) {
-								yamList.append(yams[i].asElement());
+							for(var i=0; i<threads.length; i++) {
+								yamList.append(threads[i].asElement());
 							}
+							loading = false;
 						});
 			       	}
 				});
