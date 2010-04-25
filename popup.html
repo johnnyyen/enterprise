@@ -46,27 +46,51 @@
 		</script>
 		<style>
 			body {
-				width: 390px
+				width: 350px;
+				background-color: black;
 			}
 			div#yams .yam {
 				font-size: 12px;
 				color: black;
-				border: solid 2px; #000000;
-				border-radius: 3px;
-				margin-bottom: 10px;
+				background-image: url("yam_center.png");
 				padding: 5px;
-				width: 350px;
-				float: left;
-				clear: right;
+				width: 340px;
 				overflow: hidden;
 				font-size: 14px;
 				font-family: Arial, Helvetica, sans-serif;
 			}
+			
+			div.thread {
+				height:auto;
+				margin-bottom: 10px;
+			}
+			
+			div.yamBottom {
+				height: 5px;
+				width: inherit;
+				margin-bottom: -5px;
+				margin-left: -5px;
+				background-image: url("yam_with_reply_bottom.png");				
+			}
+			
+			div#yams .reply {
+				width: 320px;
+				background-image: url("reply_center.png");
+				margin-left: 20px;
+			}
+			
+			span.yamBody {
+				width: 320px;
+			}
+			
+			
+			
 			div#yams .reply-arrow {
 				float:left;
 				color: black;
 				clear: left;
 				width: 20px;
+				display: inline;
 			}
 			#messageBox {
 				display: none;

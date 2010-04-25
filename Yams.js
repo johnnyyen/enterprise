@@ -9,13 +9,22 @@ Yam.prototype._init = function(jsonYam) {
 }
 
 Yam.prototype.asElement = function(canAddReplyArrow) {
-	var element = $('<div>')
-			.addClass("yam")
-			.attr("id", this.id)
-			.append('<p>')
-				.text(this.body.parsed);
+	var isReply = canAddReplyArrow && this.replied_to_id;
+	var element = $('<div>').addClass("yam").attr("id", this.id);
+	var body = $('<span>').addClass("yamBody").text(this.body.parsed);
 	
-	return (canAddReplyArrow && this.replied_to_id) ? $('<div>').addClass('reply-arrow').text('-->').after(element) : element;
+	if(isReply) {
+		element.addClass("reply");
+		//element.append($('<div>').addClass('reply-arrow').text("ss"));
+	}
+	
+	element.append(body);
+	
+	if(!isReply) {
+		element.append($("<div>").addClass("yamBottom"));
+	}
+	
+	return element;
 }
 
 function Thread(yam) {
