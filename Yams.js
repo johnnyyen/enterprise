@@ -1,5 +1,13 @@
 function Yam(jsonYam) {
 	this._init(jsonYam)
+	this._fetchUser();
+}
+
+Yam.prototype._fetchUser = function() {
+	var instance = this;
+	new Authentication().getUserInfo(function(data) {
+		instance.sender = data;
+	}, this.sender_id);
 }
 
 Yam.prototype._init = function(jsonYam) {
@@ -11,6 +19,13 @@ Yam.prototype._init = function(jsonYam) {
 Yam.prototype.asElement = function(canAddReplyArrow) {
 	var isReply = canAddReplyArrow && this.replied_to_id;
 	var element = $('<div>').addClass("yam").attr("id", this.id);
+	var pic = $('<img>').addClass("userPic").attr("src", this.sender.mugshot_url);
+	
+	var header = $('<div>').addClass("yamHeader");
+	var senderName = $('<span>').addClass("senderName").text(this.sender.full_name);
+	var sendTime = $('<span>').addClass("sendTime").text(this.created_at);
+	header.append(senderName).append(sendTime);
+	
 	var body = $('<span>').addClass("yamBody").text(this.body.parsed);
 	
 	if(isReply) {
@@ -18,7 +33,7 @@ Yam.prototype.asElement = function(canAddReplyArrow) {
 		//element.append($('<div>').addClass('reply-arrow').text("ss"));
 	}
 	
-	element.append(body);
+	element.append(pic).append(header).append(body);
 	
 	if(!isReply) {
 		element.append($("<div>").addClass("yamBottom"));
@@ -134,4 +149,14 @@ Threads.prototype.getThreads = function() {
 
 Threads.prototype._threadComparator = function(a, b) {
 	return (a.getThreadDate() > b.getThreadDate()) ? -1 : 1;
+}
+
+function User(jsonUser) {
+	this._init(jsonUser)
+}
+
+User.prototype._init = function(jsonUser) {
+	for(var property in jsonUser) {
+		this[property] = jsonUser[property];
+	}
 }

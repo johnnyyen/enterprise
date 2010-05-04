@@ -38,6 +38,26 @@ Authentication.prototype.getThread = function(callback, threadId) {
 	});
 }
 
+Authentication.prototype.getUserInfo = function(callback, userId) {
+	var url = 'https://www.yammer.com/api/v1/users/' + userId + '.json';
+	
+	var user = this._fetchUser(userId);
+	if(user) {
+		callback(user);
+		return;
+	}
+	
+	var instance = this;
+	this._callSync(url, 'GET', 
+			this._oauth_headers(localStorage.getItem("OAUTH_TOKEN"), localStorage.getItem("OAUTH_TOKEN_SECRET"), null), 
+			function() {}, 
+			function(data) {
+				var userInfo = JSON.parse(data);
+				instance._storeUser(userInfo);
+				callback(userInfo);
+			});
+}
+
 Authentication.prototype._init = function() {
 	if(!localStorage.getItem("OAUTH_TOKEN")) {
 		var instance = this;
@@ -59,6 +79,24 @@ Authentication.prototype._init = function() {
 			}
 		)
 	}
+}
+
+Authentication.prototype._fetchUser = function(userId) {
+	var users = JSON.parse(localStorage.getItem("usersCache"));
+	if(users && users[userId]) {
+		return JSON.parse(users[userId]);
+	}
+}
+
+Authentication.prototype._storeUser = function(userInfo) {
+	var users = JSON.parse(localStorage.getItem("usersCache"));
+
+	if(!users) {
+		users = {};	
+	}
+	
+	users[userInfo.id] = JSON.stringify(userInfo);
+	localStorage.setItem("usersCache", JSON.stringify(users));
 }
 
 Authentication.prototype._filterSkippableYams = function(yams) {
