@@ -1,19 +1,32 @@
 <html>
 	<head>
-		<script type="text/javascript" src="global.js"></script>
-		<script type="text/javascript" src="Authentication.js"></script>
-		<script type="text/javascript" src="Yams.js"></script>
 		<script type="text/javascript" src="jquery-1.4.2.min.js"></script>
 		<script type="text/javascript" src="jquery.jqpageflow.js"></script>
+		<script type="text/javascript" src="global.js"></script>
+		<script type="text/javascript" src="Authentication.js"></script>
+		<script type="text/javascript" src="Yammer.js"></script>
+		<script type="text/javascript" src="Yams.js"></script>
 		<script>
-			var loading = false;
-		
-			chrome.extension.sendRequest({action: "getMessages"}, function(response) {
+			function populateYams(response) {
   				var threads = new Threads(response).getThreads();
 				
 				var yamList = $("#yams");
 				for(var i=0; i<threads.length; i++) {
 					yamList.append(threads[i].asElement());
+				}
+			}
+			
+			var loading = false;
+		
+			chrome.browserAction.setBadgeBackgroundColor({color: [0, 0, 0, 0]});
+			chrome.browserAction.setBadgeText({text: ""});
+			
+			chrome.extension.sendRequest({action: "getMessages"}, populateYams);
+			
+			var port = chrome.extension.connect({name: "waitingForUpdates"});
+			port.onMessage.addListener(function(msg) {
+				if(msg.length > 0) {
+					$('#moreYamsAvailable').show();
 				}
 			});
 			
@@ -42,19 +55,33 @@
 				$('#toggleMessageBoxButton').click(function(){
 					$('#messageBox').toggle();
 				})
+				
+				$('#updateYams').click(function() {
+					chrome.extension.sendRequest({action: "getMessages"}, populateYams);
+					$('#moreYamsAvailable').hide();
+				})
 			});
 		</script>
 		<style>
 			body {
-				width: 350px;
+				width: 450px;
+				height: 700px;
 				background-color: black;
+				overflow: hidden;
 			}
+			
+			div#yams {
+				overflow: scroll;
+				width: 460px;
+				height: 650px;
+			}
+			
 			div#yams .yam {
 				font-size: 12px;
 				color: black;
 				background-image: url("yam_center.png");
 				padding: 5px;
-				width: 340px;
+				width: 350px;
 				overflow: hidden;
 				font-size: 14px;
 				font-family: Arial, Helvetica, sans-serif;
@@ -81,9 +108,30 @@
 			
 			span.yamBody {
 				width: 320px;
+				font-size: 14px;
+				margin-left: 3px;
 			}
 			
+			div.yamHeader {
+				width: 84%;
+				display: inline;
+				float: left;
+				color:#858585;
+				font-size: 10px;
+				padding-bottom: 3px;
+			}
 			
+			div.yamFooter {
+				color:#858585;
+				font-size: 10px;
+				padding-top: 3px;
+			}
+			
+			img.userPic {
+				float: left;
+				padding-right: 3px;
+				padding-bottom: 3px;
+			}
 			
 			div#yams .reply-arrow {
 				float:left;
@@ -95,11 +143,18 @@
 			#messageBox {
 				display: none;
 			}
+			
+			div#moreYamsAvaliable {
+				display: none;
+			}
 		</style>
 	</head>
 	<body>
 		<a id="toggleMessageBoxButton" href="javascript:;">Yam something</a>
 		<textarea id="messageBox"></textarea>
+		<div id="moreYamsAvaliable">
+			<a id="updateYams">Update your yams</a>
+		</div>
 		<div id="yams">
 		</div>
 	</body>

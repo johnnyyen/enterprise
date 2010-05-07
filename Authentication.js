@@ -8,56 +8,6 @@ function Authentication() {
 	this._init();
 }
 
-Authentication.prototype.getMessages = function(callback, olderThan) {
-	var url = 'https://www.yammer.com/api/v1/messages.json';
-	
-	if(olderThan) url += '?older_than=' + olderThan
-	
-	var instance = this;
-	this._call(url, 'GET', 
-		this._oauth_headers(localStorage.getItem("OAUTH_TOKEN"), localStorage.getItem("OAUTH_TOKEN_SECRET"), null), 
-		function() {}, 
-		function(data) {
-			var yams = JSON.parse(data).messages
-			yams = instance._filterSkippableYams(yams);
-			callback(yams);
-	});
-}
-
-Authentication.prototype.getThread = function(callback, threadId) {
-	var url = 'https://www.yammer.com/api/v1/messages/in_thread/' + threadId + '.json';
-		
-	var instance = this;
-	this._callSync(url, 'GET', 
-		this._oauth_headers(localStorage.getItem("OAUTH_TOKEN"), localStorage.getItem("OAUTH_TOKEN_SECRET"), null), 
-		function() {}, 
-		function(data) {
-			var yams = JSON.parse(data).messages;
-			instance._storeSkippableYamIds(yams)
-			callback(yams);
-	});
-}
-
-Authentication.prototype.getUserInfo = function(callback, userId) {
-	var url = 'https://www.yammer.com/api/v1/users/' + userId + '.json';
-	
-	var user = this._fetchUser(userId);
-	if(user) {
-		callback(user);
-		return;
-	}
-	
-	var instance = this;
-	this._callSync(url, 'GET', 
-			this._oauth_headers(localStorage.getItem("OAUTH_TOKEN"), localStorage.getItem("OAUTH_TOKEN_SECRET"), null), 
-			function() {}, 
-			function(data) {
-				var userInfo = JSON.parse(data);
-				instance._storeUser(userInfo);
-				callback(userInfo);
-			});
-}
-
 Authentication.prototype._init = function() {
 	if(!localStorage.getItem("OAUTH_TOKEN")) {
 		var instance = this;
@@ -79,51 +29,6 @@ Authentication.prototype._init = function() {
 			}
 		)
 	}
-}
-
-Authentication.prototype._fetchUser = function(userId) {
-	var users = JSON.parse(localStorage.getItem("usersCache"));
-	if(users && users[userId]) {
-		return JSON.parse(users[userId]);
-	}
-}
-
-Authentication.prototype._storeUser = function(userInfo) {
-	var users = JSON.parse(localStorage.getItem("usersCache"));
-
-	if(!users) {
-		users = {};	
-	}
-	
-	users[userInfo.id] = JSON.stringify(userInfo);
-	localStorage.setItem("usersCache", JSON.stringify(users));
-}
-
-Authentication.prototype._filterSkippableYams = function(yams) {
-	var skippable = localStorage.getItem("alreadyFetchedYamIds");
-	if(skippable) {
-		skippable = skippable.split(",");
-		for(var i=0 ; i<yams.length ; i++) {
-			if(contains(skippable, yams[i].id)) {
-				yams.splice(i, 1);
-				i--;
-			}
-		}
-	}
-	return yams;
-}
-
-Authentication.prototype._storeSkippableYamIds = function(yams) {
-	var alreadyFetched = localStorage.getItem("alreadyFetchedYamIds");
-	if(!alreadyFetched) {
-		alreadyFetched = new Array();
-	} else {
-		alreadyFetched = alreadyFetched.split(",");
-	}
-	for(var i=0 ; i<yams.length ; i++) {
-		alreadyFetched.push(yams[i].id);
-	}
-	localStorage.setItem("alreadyFetchedYamIds", alreadyFetched);
 }
 
 Authentication.prototype._getCode = function(tabId, changeInfo, tab) {
@@ -158,7 +63,7 @@ Authentication.prototype._getCode = function(tabId, changeInfo, tab) {
 	}
 }
 
-Authentication.prototype._call = function(url, method, headers, onSuccess, parseData, onError) {
+Authentication.prototype.call = function(url, method, headers, onSuccess, parseData, onError) {
 	var xhr = new XMLHttpRequest();
 	xhr.onreadystatechange = function(data) {
 		if (xhr.readyState == 4) {
@@ -175,7 +80,7 @@ Authentication.prototype._call = function(url, method, headers, onSuccess, parse
 	xhr.send();
 }
 
-Authentication.prototype._callSync = function(url, method, headers, onSuccess, parseData, onError) {
+Authentication.prototype.callSync = function(url, method, headers, onSuccess, parseData, onError) {
 	var xhr = new XMLHttpRequest();
 	xhr.onreadystatechange = function(data) {
 		if (xhr.readyState == 4) {
@@ -188,7 +93,7 @@ Authentication.prototype._callSync = function(url, method, headers, onSuccess, p
 		 }
 	}
 	xhr.open(method, url, false);
-	xhr.setRequestHeader('Authorization', headers);
+	xhr.setRequestHeader('Authorization', headers ? headers : this._oauth_headers(localStorage.getItem("OAUTH_TOKEN"), localStorage.getItem("OAUTH_TOKEN_SECRET"), null));
 	xhr.send();
 }
 

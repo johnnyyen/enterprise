@@ -1,20 +1,57 @@
 <html>
 	<head>
 		<script type="text/javascript" src="Authentication.js"></script>
+		<script type="text/javascript" src="Yammer.js"></script>
 		<script type="text/javascript" src="Yams.js"></script>
 		<script type="text/javascript" src="global.js"></script>
 		<script type="text/javascript">
+var yammer = new Yammer();
+var waitingYams = [];
+
 chrome.extension.onRequest.addListener(
 	function(request, sender, sendResponse) {
 		if (request.action == "getMessages") { 
-			var authenticated = new Authentication();
-			authenticated.getMessages(sendResponse, localStorage.getItem("lastYamId"));
+			yammer.getMessages(sendResponse, {
+				"olderThan": localStorage.getItem("lastYamId")
+			});
 			localStorage.removeItem("lastYamId");
 		} else if(request.action == "storeLastYamId") {
 			localStorage.setItem("lastYamId", request.yamId);
 		}
 	}
 );
+
+chrome.extension.onConnect.addListener(function(port) {
+  console.assert(port.name == "waitingForUpdates");
+  port.onMessage.addListener(function() {
+      port.postMessage(waitingYams);
+  });
+});
+
+schedulePoll(5);
+
+function schedulePoll(seconds) {
+	window.setTimeout(startPoll, seconds * 1000);
+}
+
+function startPoll() {
+	var newestYamId = yammer.getNewestYamId();
+	if(newestYamId) {
+		yammer.getMessages(function(yams){
+			if(yams && yams.length > 0) {
+				waitingYams.push(yams);
+				console.log(yams.length + " more yams came in");
+				
+				chrome.browserAction.setBadgeBackgroundColor({color: [255, 0, 0, 255]});
+				chrome.browserAction.setBadgeText({text: "" + waitingYams.length});
+			} else {
+				console.log("no new yams on this round");
+			}
+		}, {"newerThan": newestYamId});
+	}
+	schedulePoll(5);
+}
+
 		</script>
 	</head>
 	<body>

@@ -5,7 +5,7 @@ function Yam(jsonYam) {
 
 Yam.prototype._fetchUser = function() {
 	var instance = this;
-	new Authentication().getUserInfo(function(data) {
+	new Yammer().getUserInfo(function(data) {
 		instance.sender = data;
 	}, this.sender_id);
 }
@@ -21,26 +21,67 @@ Yam.prototype.asElement = function(canAddReplyArrow) {
 	var element = $('<div>').addClass("yam").attr("id", this.id);
 	var pic = $('<img>').addClass("userPic").attr("src", this.sender.mugshot_url);
 	
-	var header = $('<div>').addClass("yamHeader");
+	var header = $('<div>').addClass("yamHeader").text("by ");
 	var senderName = $('<span>').addClass("senderName").text(this.sender.full_name);
-	var sendTime = $('<span>').addClass("sendTime").text(this.created_at);
+	var sendTime = $('<span>').addClass("sendTime").text(this.getCreatedTime());
 	header.append(senderName).append(sendTime);
 	
-	var body = $('<span>').addClass("yamBody").text(this.body.parsed);
+	var body = this.getBody();
 	
 	if(isReply) {
 		element.addClass("reply");
-		//element.append($('<div>').addClass('reply-arrow').text("ss"));
 	}
 	
 	element.append(pic).append(header).append(body);
 	
+	if(this.liked_by.count > 0) { 
+		var liked = "Liked by ";
+		for(var i=0; i<this.liked_by.names.length; i++) {
+			var likedBy = this.liked_by.names[i].full_name;
+			liked += (i>0 ? ", " : "") +  likedBy;
+		}
+		element.append($('<div>').addClass("yamFooter").text(liked));
+	}
+			
 	if(!isReply) {
 		element.append($("<div>").addClass("yamBottom"));
 	}
 	
 	return element;
 }
+
+Yam.prototype.getBody = function() {
+	var bodyElement = $('<span>').addClass("yamBody");
+	var body = this.body.plain;
+	
+	var urls = this.body.urls;
+	if(urls) {
+		for(var i in urls) {
+			var index = body.indexOf(urls[i]);
+			bodyElement.append(body.substr(0, index));
+			body = body.slice(index + urls[i].length);
+			bodyElement.append(this._createAnchor(urls[i]));
+		}		
+	}
+	return bodyElement.append(body);
+}
+
+Yam.prototype._createAnchor = function(url) {
+	var instance = this;
+	return  $('<a>').addClass("url")
+		.attr("href", url)
+		.text(url.substr(0, 37) + (url.length > 37 ? "..." : ""))
+		.attr("title", url)
+		.click(function() {
+			chrome.tabs.create({"url": url, selected: false});
+		});
+}
+
+Yam.prototype.getCreatedTime = function() {
+	var date = new Date(this.created_at);
+	return " @" + date.toLocaleTimeString() + " on " + date.toLocaleDateString();
+}
+
 
 function Thread(yam) {
 	this.YAMS = new Array();
@@ -68,7 +109,7 @@ Thread.prototype.clearYams = function() {
 Thread.prototype.finalize = function() {
 	if(!this._hasFirstYam()) {
 		var instance = this;
-		new Authentication().getThread(function(data) {
+		new Yammer().getThread(function(data) {
 			instance.clearYams();
 			for(var i=0 ; i<data.length ; i++) {
 				var yam = new Yam(data[i]);
@@ -116,6 +157,8 @@ Thread.prototype._yamComparator = function(a, b) {
 	return (new Date(a.created_at) < new Date(b.created_at)) ? -1 : 1;
 }
 
+
+
 function Threads(yamsListJSON) {
 	this.THREADS = new Array();
 	this._init(yamsListJSON);
@@ -149,14 +192,4 @@ Threads.prototype.getThreads = function() {
 
 Threads.prototype._threadComparator = function(a, b) {
 	return (a.getThreadDate() > b.getThreadDate()) ? -1 : 1;
-}
-
-function User(jsonUser) {
-	this._init(jsonUser)
-}
-
-User.prototype._init = function(jsonUser) {
-	for(var property in jsonUser) {
-		this[property] = jsonUser[property];
-	}
 }
