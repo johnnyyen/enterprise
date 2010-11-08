@@ -8,6 +8,7 @@ function Authentication() {
 	this._init();
 }
 
+
 Authentication.prototype._init = function() {
 	if(!localStorage.getItem("OAUTH_TOKEN")) {
 		var instance = this;
