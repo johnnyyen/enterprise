@@ -1,6 +1,6 @@
 function Authentication() {
-	this.CONSUMER_KEY = "Yocs3IGzpE1wOLmj6cIAhQ";
-	this.CONSUMER_SECRET = "66Ty5h2YQ2EHH1WkuWMprR6S2ZvHXoMAX8cbejBHU";
+	this.CONSUMER_KEY = "B9Lai28Gm3aJqLeY3qiBag";
+	this.CONSUMER_SECRET = "yNlf14auuRKuB0v7Yn4qk0m3nY0644HgD5CCxDOOyU";
 		
 	this.OAUTH_TOKEN = "";
 	this.OAUTH_TOKEN_SECRET = "";
@@ -11,7 +11,7 @@ function Authentication() {
 Authentication.prototype._init = function() {
 	if(!localStorage.getItem("OAUTH_TOKEN")) {
 		var instance = this;
-		this._call('https://www.yammer.com/oauth/request_token', 'POST', this._oauth_headers(null, null, null),
+		this.call('https://www.yammer.com/oauth/request_token', 'POST', this._oauth_headers(null, null, null),
 			function() {
 				chrome.tabs.create({"url": "https://www.yammer.com/oauth/authorize?oauth_token=" + instance.OAUTH_TOKEN});
 				chrome.tabs.onUpdated.addListener( function(tabId, changeInfo, tab){instance._getCode(tabId, changeInfo, tab)} );
