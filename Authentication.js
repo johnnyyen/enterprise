@@ -44,7 +44,7 @@ Authentication.prototype._getCode = function(tabId, changeInfo, tab) {
 		chrome.tabs.remove(tabId)
 		
 		var instance = this;
-		this._call('https://www.yammer.com/oauth/access_token', 'POST', 
+		this.call('https://www.yammer.com/oauth/access_token', 'POST', 
 			this._oauth_headers(this.OAUTH_TOKEN, this.OAUTH_TOKEN_SECRET, this.OAUTH_VERIFIER),
 			function() {},
 			function(data) {
@@ -76,7 +76,8 @@ Authentication.prototype.call = function(url, method, headers, onSuccess, parseD
 		 }
 	}
 	xhr.open(method, url, true);
-	xhr.setRequestHeader('Authorization', headers);
+	xhr.setRequestHeader('Authorization', headers ? header : this._oauth_headers(localStorage.getItem("OAUTH_TOKEN"), localStorage.getItem("OAUTH_TOKEN_SECRET"), null));
+	xhr.setRequestHeader("Content-Type", "text/json");
 	xhr.send();
 }
 

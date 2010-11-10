@@ -34,14 +34,17 @@ Yam.prototype.asElement = function(canAddReplyArrow) {
 	
 	element.append(pic).append(header).append(body);
 	
+	var footer = $('<div>').addClass("yamFooter").append($('<div>').addClass('replyButton').text("Reply"));
+	
 	if(this.liked_by.count > 0) { 
 		var liked = "Liked by ";
 		for(var i=0; i<this.liked_by.names.length; i++) {
 			var likedBy = this.liked_by.names[i].full_name;
 			liked += (i>0 ? ", " : "") +  likedBy;
 		}
-		element.append($('<div>').addClass("yamFooter").text(liked));
+		footer.append($('<div>').addClass("likedBy").text(liked));
 	}
+	element.append(footer);
 			
 	if(!isReply) {
 		element.append($("<div>").addClass("yamBottom"));

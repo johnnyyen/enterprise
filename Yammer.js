@@ -12,7 +12,9 @@ Yammer.prototype.getMessages = function(callback, options) {
 	this.authentication.call(url, 'GET', null, null, 
 		function(data) {
 			var yams = JSON.parse(data).messages
-			instance._storeNewestYamId(yams);
+			if (!options.olderThan) {
+				instance._storeNewestYamId(yams);
+			}
 			yams = instance._filterSkippableYams(yams);
 			callback(yams);
 	});

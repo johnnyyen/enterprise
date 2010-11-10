@@ -1,12 +1,13 @@
 <html>
 	<head>
 		<script type="text/javascript" src="jquery-1.4.2.min.js"></script>
-		<script type="text/javascript" src="jquery.jqpageflow.js"></script>
 		<script type="text/javascript" src="global.js"></script>
 		<script type="text/javascript" src="Authentication.js"></script>
 		<script type="text/javascript" src="Yammer.js"></script>
 		<script type="text/javascript" src="Yams.js"></script>
 		<script>
+			localStorage.setItem("popupOpen", true);
+			
 			function populateYams(response) {
   				var threads = new Threads(response).getThreads();
 				
@@ -34,11 +35,12 @@
 				$(window).unload(function() {
 					localStorage.removeItem("lastYamId");
 					localStorage.removeItem("alreadyFetchedYamIds");
+					localStorage.setItem("popupOpen", false);
 				});
 				
-				$(window).scroll(function(){
+				$('#yams').scroll(function(){
 					// work out whether we need to fire our ajax call or not
-			       	if (!loading && $(this).scrollTop() == $(document).height() - $(this).height() ) {
+			       	if (!loading && this.scrollHeight - $(this).scrollTop() == $(this).outerHeight() ) {
 						loading = true;
 						chrome.extension.sendRequest({action: "getMessages"}, function(response) {
 			  				var threads = new Threads(response).getThreads();
@@ -60,31 +62,39 @@
 					chrome.extension.sendRequest({action: "getMessages"}, populateYams);
 					$('#moreYamsAvailable').hide();
 				})
+				
+				$('#sendYam').click(function() {
+					alert("Yam sent: " + $("#messageBox").val());
+				})
 			});
 		</script>
 		<style>
 			body {
-				width: 450px;
+				width: 400px;
 				height: 700px;
 				background-color: black;
 				overflow: hidden;
 			}
 			
 			div#yams {
-				overflow: scroll;
-				width: 460px;
-				height: 650px;
+				overflow-x: hidden;
+				overflow-y: scroll;
+				width: 408px;
+				height: 524px;
+				margin-top: 10px;
 			}
 			
 			div#yams .yam {
 				font-size: 12px;
 				color: black;
-				background-image: url("yam_center.png");
 				padding: 5px;
 				width: 350px;
 				overflow: hidden;
 				font-size: 14px;
 				font-family: Arial, Helvetica, sans-serif;
+				background-color: white;
+				border-radius: 5px;
+				border-color: grey;
 			}
 			
 			div.thread {
@@ -97,13 +107,13 @@
 				width: inherit;
 				margin-bottom: -5px;
 				margin-left: -5px;
-				background-image: url("yam_with_reply_bottom.png");				
 			}
 			
 			div#yams .reply {
 				width: 320px;
-				background-image: url("reply_center.png");
-				margin-left: 20px;
+				margin-left: 30px;
+				margin-top: -7px;
+				padding-top: 10px;
 			}
 			
 			span.yamBody {
@@ -141,17 +151,46 @@
 				display: inline;
 			}
 			#messageBox {
-				display: none;
+				border-radius: 5px;
+				border-color: grey;
+				border-width: 2px;
 			}
 			
 			div#moreYamsAvaliable {
 				display: none;
 			}
+			
+			div#sendYam {
+				float: right;
+				padding: 15px 8px;
+				color: white;
+				cursor: hand;
+				font-weight: bold;
+			}
+			
+			div#sendYam:hover {
+				text-shadow: 1px 1px 1px grey;
+			}
+			
+			div.replyButton {
+				float: left;
+				padding-right: 5px;
+				color: green;
+				cursor: hand;
+			}
+			
+			div.replyButton:hover {
+				font-weight: bold;
+			}
+			
+			div.likedBy {
+				float: left;
+			}
 		</style>
 	</head>
 	<body>
-		<a id="toggleMessageBoxButton" href="javascript:;">Yam something</a>
-		<textarea id="messageBox"></textarea>
+		<textarea id="messageBox" cols="40", rows="3"></textarea>
+		<div id="sendYam">Send</div>
 		<div id="moreYamsAvaliable">
 			<a id="updateYams">Update your yams</a>
 		</div>

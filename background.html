@@ -1,5 +1,6 @@
 <html>
 	<head>
+		<title></title>
 		<script type="text/javascript" src="Authentication.js"></script>
 		<script type="text/javascript" src="Yammer.js"></script>
 		<script type="text/javascript" src="Yams.js"></script>
@@ -35,19 +36,21 @@ function schedulePoll(seconds) {
 }
 
 function startPoll() {
-	var newestYamId = yammer.getNewestYamId();
-	if(newestYamId) {
-		yammer.getMessages(function(yams){
-			if(yams && yams.length > 0) {
-				waitingYams.push(yams);
-				console.log(yams.length + " more yams came in");
-				
-				chrome.browserAction.setBadgeBackgroundColor({color: [255, 0, 0, 255]});
-				chrome.browserAction.setBadgeText({text: "" + waitingYams.length});
-			} else {
-				console.log("no new yams on this round");
-			}
-		}, {"newerThan": newestYamId});
+	if(localStorage.getItem("popupOpen") == "false") {
+		var newestYamId = yammer.getNewestYamId();
+		if(newestYamId) {
+			yammer.getMessages(function(yams){
+				if(yams && yams.length > 0) {
+					waitingYams.push(yams);
+					console.log(yams.length + " more yams came in");
+					
+					chrome.browserAction.setBadgeBackgroundColor({color: [255, 0, 0, 255]});
+					chrome.browserAction.setBadgeText({text: "" + waitingYams.length});
+				} else {
+					console.log("no new yams on this round");
+				}
+			}, {"newerThan": newestYamId});
+		}
 	}
 	schedulePoll(5);
 }
